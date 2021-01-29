@@ -13,10 +13,10 @@
         }
     ],
     "autoload": {
-        "psr-4": { "Installers\\": "Installers" }
+        "psr-4": { "Pixelion\\Composer\\Installers\\": "Installers" }
     },
     "extra": {
-        "class": "Installers\\Plugin"
+        "class": "Pixelion\\Composer\\Installers\\Plugin"
     },
     "require": {
         "composer-plugin-api": "^1.0 || ^2.0"
