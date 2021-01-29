@@ -1,6 +1,6 @@
 <?php
 
-namespace Pixelion\\Composer\Installers;
+namespace Pixelion\Composer\Installers;
 
 use Composer\Composer;
 use Composer\IO\IOInterface;
