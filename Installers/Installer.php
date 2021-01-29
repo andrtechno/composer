@@ -1,6 +1,6 @@
 <?php
 
-namespace Composer\Installers;
+namespace Pixelion\Composer\Installers;
 
 use Composer\Composer;
 use Composer\Installer\BinaryInstaller;
