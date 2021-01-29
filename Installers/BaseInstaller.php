@@ -1,5 +1,5 @@
 <?php
-namespace Pixelion\\Composer\Installers;
+namespace Pixelion\Composer\Installers;
 
 use Composer\IO\IOInterface;
 use Composer\Composer;
