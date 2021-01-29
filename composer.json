@@ -1,0 +1,26 @@
+{
+    "name": "panix/composer",
+    "type": "composer-plugin",
+    "license": "MIT",
+    "description": "Composer library installer",
+    "homepage": "https://github.com/andrtechno/composer",
+    "authors": [
+        {
+            "name": "PIXELION CMS",
+            "email": "dev@pixelion.com.ua",
+            "homepage": "https://pixelion.com.ua"
+        }
+    ],
+    "autoload": {
+        "psr-4": { "CMS\\Composer\\Installers\\": "Installers" }
+    },
+    "extra": {
+        "class": "Installers\\Plugin"
+    },
+    "require": {
+        "composer-plugin-api": "^1.0 || ^2.0"
+    },
+    "scripts": {
+        "phpstan": "vendor/bin/phpstan analyse"
+    }
+}
