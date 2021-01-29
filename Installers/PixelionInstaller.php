@@ -1,5 +1,5 @@
 <?php
-namespace Composer\Installers;
+namespace Pixelion\Composer\Installers;
 
 class PixelionInstaller extends BaseInstaller
 {
