@@ -6,7 +6,7 @@ class PixelionInstaller extends BaseInstaller
     protected $locations = array(
         'core'             => 'core/',
         'module'           => 'modules/{$name}/',
-        'theme'            => 'themes/{$name}/',
+        'theme'            => 'web/themes/{$name}/',
         'library'          => 'libraries/{$name}/',
         'profile'          => 'profiles/{$name}/',
         'database-driver'  => 'drivers/lib/Drupal/Driver/Database/{$name}/',
