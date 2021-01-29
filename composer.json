@@ -4,6 +4,7 @@
     "license": "MIT",
     "description": "Composer library installer",
     "homepage": "https://github.com/andrtechno/composer",
+    "minimum-stability": "stable",
     "authors": [
         {
             "name": "PIXELION CMS",
@@ -12,7 +13,7 @@
         }
     ],
     "autoload": {
-        "psr-4": { "CMS\\Composer\\Installers\\": "Installers" }
+        "psr-4": { "Installers\\": "Installers" }
     },
     "extra": {
         "class": "Installers\\Plugin"
