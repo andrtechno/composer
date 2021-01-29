@@ -1,7 +1,7 @@
 <?php
 namespace Composer\Installers;
 
-class DrupalInstaller extends BaseInstaller
+class PixelionInstaller extends BaseInstaller
 {
     protected $locations = array(
         'core'             => 'core/',
