@@ -61,7 +61,7 @@ class Installer extends LibraryInstaller
             );
         }
 
-        $class = 'Installers\\' . $this->supportedTypes[$frameworkType];
+        $class = 'Pixelion\\Composer\\Installers\\' . $this->supportedTypes[$frameworkType];
         $installer = new $class($package, $this->composer, $this->getIO());
 
         return $installer->getInstallPath($package, $frameworkType);
@@ -134,7 +134,7 @@ class Installer extends LibraryInstaller
     {
         $pattern = false;
         if (!empty($this->supportedTypes[$frameworkType])) {
-            $frameworkClass = 'Installers\\' . $this->supportedTypes[$frameworkType];
+            $frameworkClass = 'Pixelion\\Composer\\Installers\\' . $this->supportedTypes[$frameworkType];
             /** @var BaseInstaller $framework */
             $framework = new $frameworkClass(null, $this->composer, $this->getIO());
             $locations = array_keys($framework->getLocations());
