@@ -20,7 +20,7 @@ class Installer extends LibraryInstaller
      * @var array
      */
     private $supportedTypes = array(
-        'pixelion'       => 'DrupalInstaller',
+        'pixelion'       => 'PixelionInstaller',
     );
 
     /**
