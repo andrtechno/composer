@@ -9,4 +9,9 @@
 | `pixelion-theme`
 | `pixelion-module`
 | `pixelion-widget`
+| `pixelion-component`
+| `pixelion-theme-custom`
+| `pixelion-module-custom`
+| `pixelion-widget-custom`
+| `pixelion-component-custom`
 
