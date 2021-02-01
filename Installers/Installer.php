@@ -21,7 +21,7 @@ class Installer extends LibraryInstaller
      * @var array
      */
     private $supportedTypes = array(
-        'pixelion'       => 'PixelionInstaller',
+        'pixelion' => 'PixelionInstaller',
     );
 
     /**
@@ -30,10 +30,10 @@ class Installer extends LibraryInstaller
      * Disables installers specified in main composer extra installer-disable
      * list
      *
-     * @param IOInterface          $io
-     * @param Composer             $composer
-     * @param string               $type
-     * @param Filesystem|null      $filesystem
+     * @param IOInterface $io
+     * @param Composer $composer
+     * @param string $type
+     * @param Filesystem|null $filesystem
      * @param BinaryInstaller|null $binaryInstaller
      */
     public function __construct(
@@ -42,7 +42,8 @@ class Installer extends LibraryInstaller
         $type = 'library',
         Filesystem $filesystem = null,
         BinaryInstaller $binaryInstaller = null
-    ) {
+    )
+    {
         parent::__construct($io, $composer, $type, $filesystem,
             $binaryInstaller);
         $this->removeDisabledInstallers();
@@ -90,7 +91,7 @@ class Installer extends LibraryInstaller
         // If not, execute the code right away as parent::install executed synchronously (composer v1, or v2 without async)
         $afterInstall();
     }
-    
+
     protected function addPackage(PackageInterface $package)
     {
 
@@ -101,6 +102,7 @@ class Installer extends LibraryInstaller
         ];
 
         $alias = $this->generateDefaultAlias($package);
+
         if (!empty($alias)) {
             $extension['alias'] = $alias;
         }
@@ -113,6 +115,7 @@ class Installer extends LibraryInstaller
         $extensions[$package->getName()] = $extension;
         $this->saveExtensions($extensions);
     }
+
     protected function removePackage(PackageInterface $package)
     {
         $packages = $this->loadExtensions();
@@ -148,6 +151,7 @@ class Installer extends LibraryInstaller
 
         return $extensions;
     }
+
     protected function generateDefaultAlias(PackageInterface $package)
     {
         $fs = new Filesystem;
@@ -170,8 +174,30 @@ class Installer extends LibraryInstaller
                 }
             }
         }
+
+        if (!empty($autoload['psr-4'])) {
+            foreach ($autoload['psr-4'] as $name => $path) {
+                if (is_array($path)) {
+                    // ignore psr-4 autoload specifications with multiple search paths
+                    // we can not convert them into aliases as they are ambiguous
+                    continue;
+                }
+                $name = str_replace('\\', '/', trim($name, '\\'));
+                if (!$fs->isAbsolutePath($path)) {
+                    $path = $this->vendorDir . '/' . $package->getPrettyName() . '/' . $path;
+                }
+                $path = $fs->normalizePath($path);
+                if (strpos($path . '/', $vendorDir . '/') === 0) {
+                    $aliases["@$name"] = '<vendor-dir>' . substr($path, strlen($vendorDir));
+                } else {
+                    $aliases["@$name"] = $path;
+                }
+            }
+        }
+
+        return $aliases;
     }
-    //NEW
+
     protected function saveExtensions(array $extensions)
     {
         $file = $this->vendorDir . '/' . static::EXTENSION_FILE;
@@ -185,6 +211,7 @@ class Installer extends LibraryInstaller
             @opcache_invalidate($file, true);
         }
     }
+
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
         $afterUpdate = function () use ($initial, $target) {
@@ -203,6 +230,7 @@ class Installer extends LibraryInstaller
         // If not, execute the code right away as parent::update executed synchronously (composer v1, or v2 without async)
         $afterUpdate();
     }
+
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
 
@@ -250,7 +278,7 @@ class Installer extends LibraryInstaller
     /**
      * Finds a supported framework type if it exists and returns it
      *
-     * @param  string       $type
+     * @param string $type
      * @return string|false
      */
     protected function findFrameworkType($type)
@@ -270,7 +298,7 @@ class Installer extends LibraryInstaller
      * Get the second part of the regular expression to check for support of a
      * package type
      *
-     * @param  string $frameworkType
+     * @param string $frameworkType
      * @return string
      */
     protected function getLocationPattern($frameworkType)
@@ -284,7 +312,7 @@ class Installer extends LibraryInstaller
             $pattern = $locations ? '(' . implode('|', $locations) . ')' : false;
         }
 
-        return $pattern ? : '(\w+)';
+        return $pattern ?: '(\w+)';
     }
 
     /**
