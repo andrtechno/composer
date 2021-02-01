@@ -12,5 +12,6 @@ class PixelionInstaller extends BaseInstaller
         'module-custom' => 'modules/{$name}/',
         'widget-custom' => 'widgets/{$name}/',
         'widget-component' => 'components/{$name}/',
+        'theme-custom' => 'web/themes/{$name}/',
     );
 }
