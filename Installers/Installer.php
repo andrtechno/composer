@@ -11,9 +11,11 @@ use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Util\Filesystem;
 use React\Promise\PromiseInterface;
 
+
 class Installer extends LibraryInstaller
 {
-
+    const EXTRA_BOOTSTRAP = 'bootstrap';
+    const EXTENSION_FILE = 'panix/modules.php';
     /**
      * Package types to installer class map
      *
@@ -66,9 +68,158 @@ class Installer extends LibraryInstaller
 
         return $installer->getInstallPath($package, $frameworkType);
     }
+    //NEW
+    public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
+    {
+        $afterInstall = function () use ($package) {
+            // add the package to yiisoft/extensions.php
+            $this->addPackage($package);
+            // ensure the yii2-dev package also provides Yii.php in the same place as yii2 does
+            //if ($package->getName() == 'yiisoft/yii2-dev') {
+            //    $this->linkBaseYiiFiles();
+            //}
+        };
 
+        // install the package the normal composer way
+        $promise = parent::install($repo, $package);
+
+        // Composer v2 might return a promise here
+        if ($promise instanceof PromiseInterface) {
+            return $promise->then($afterInstall);
+        }
+
+        // If not, execute the code right away as parent::install executed synchronously (composer v1, or v2 without async)
+        $afterInstall();
+    }
+
+    //NEW
+    protected function addPackage(PackageInterface $package)
+    {
+        $extension = [
+            'name' => $package->getName(),
+            'version' => $package->getVersion(),
+        ];
+
+        $alias = $this->generateDefaultAlias($package);
+        if (!empty($alias)) {
+            $extension['alias'] = $alias;
+        }
+        $extra = $package->getExtra();
+        if (isset($extra[self::EXTRA_BOOTSTRAP])) {
+            $extension['bootstrap'] = $extra[self::EXTRA_BOOTSTRAP];
+        }
+
+        $extensions = $this->loadExtensions();
+        $extensions[$package->getName()] = $extension;
+        $this->saveExtensions($extensions);
+    }
+    protected function removePackage(PackageInterface $package)
+    {
+        $packages = $this->loadExtensions();
+        unset($packages[$package->getName()]);
+        $this->saveExtensions($packages);
+    }
+
+    protected function loadExtensions()
+    {
+        $file = $this->vendorDir . '/' . static::EXTENSION_FILE;
+        if (!is_file($file)) {
+            return [];
+        }
+        // invalidate opcache of extensions.php if exists
+        if (function_exists('opcache_invalidate')) {
+            @opcache_invalidate($file, true);
+        }
+        $extensions = require($file);
+
+        $vendorDir = str_replace('\\', '/', $this->vendorDir);
+        $n = strlen($vendorDir);
+
+        foreach ($extensions as &$extension) {
+            if (isset($extension['alias'])) {
+                foreach ($extension['alias'] as $alias => $path) {
+                    $path = str_replace('\\', '/', $path);
+                    if (strpos($path . '/', $vendorDir . '/') === 0) {
+                        $extension['alias'][$alias] = '<vendor-dir>' . substr($path, $n);
+                    }
+                }
+            }
+        }
+
+        return $extensions;
+    }
+    protected function generateDefaultAlias(PackageInterface $package)
+    {
+        $fs = new Filesystem;
+        $vendorDir = $fs->normalizePath($this->vendorDir);
+        $autoload = $package->getAutoload();
+
+        $aliases = [];
+
+        if (!empty($autoload['psr-0'])) {
+            foreach ($autoload['psr-0'] as $name => $path) {
+                $name = str_replace('\\', '/', trim($name, '\\'));
+                if (!$fs->isAbsolutePath($path)) {
+                    $path = $this->vendorDir . '/' . $package->getPrettyName() . '/' . $path;
+                }
+                $path = $fs->normalizePath($path);
+                if (strpos($path . '/', $vendorDir . '/') === 0) {
+                    $aliases["@$name"] = '<vendor-dir>' . substr($path, strlen($vendorDir)) . '/' . $name;
+                } else {
+                    $aliases["@$name"] = $path . '/' . $name;
+                }
+            }
+        }
+    }
+    //NEW
+    protected function saveExtensions(array $extensions)
+    {
+        $file = $this->vendorDir . '/' . static::EXTENSION_FILE;
+        if (!file_exists(dirname($file))) {
+            mkdir(dirname($file), 0777, true);
+        }
+        $array = str_replace("'<vendor-dir>", '$vendorDir . \'', var_export($extensions, true));
+        file_put_contents($file, "<?php\n\n\$vendorDir = dirname(__DIR__);\n\nreturn $array;\n");
+        // invalidate opcache of extensions.php if exists
+        if (function_exists('opcache_invalidate')) {
+            @opcache_invalidate($file, true);
+        }
+    }
+    public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
+    {
+        $afterUpdate = function () use ($initial, $target) {
+            $this->removePackage($initial);
+            $this->addPackage($target);
+            // ensure the yii2-dev package also provides Yii.php in the same place as yii2 does
+            //if ($initial->getName() == 'yiisoft/yii2-dev') {
+            //    $this->linkBaseYiiFiles();
+            //}
+        };
+
+        // update the package the normal composer way
+        $promise = parent::update($repo, $initial, $target);
+
+        // Composer v2 might return a promise here
+        if ($promise instanceof PromiseInterface) {
+            return $promise->then($afterUpdate);
+        }
+
+        // If not, execute the code right away as parent::update executed synchronously (composer v1, or v2 without async)
+        $afterUpdate();
+    }
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
+
+        $afterUninstall = function () use ($package) {
+            // remove the package from yiisoft/extensions.php
+            $this->removePackage($package);
+            // remove links for Yii.php
+           // if ($package->getName() == 'yiisoft/yii2-dev') {
+           //     $this->removeBaseYiiFiles();
+           // }
+        };
+
+
         $installPath = $this->getPackageBasePath($package);
         $io = $this->io;
         $outputStatus = function () use ($io, $installPath) {
@@ -84,7 +235,7 @@ class Installer extends LibraryInstaller
 
         // If not, execute the code right away as parent::uninstall executed synchronously (composer v1, or v2 without async)
         $outputStatus();
-
+        $afterUninstall();
         return null;
     }
 
