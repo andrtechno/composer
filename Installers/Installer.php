@@ -11,11 +11,10 @@ use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Util\Filesystem;
 use React\Promise\PromiseInterface;
 
-
 class Installer extends LibraryInstaller
 {
-    const EXTRA_BOOTSTRAP = 'bootstrap';
-    const EXTENSION_FILE = 'panix/modules.php';
+    const EXTRA_BOOTSTRAP = \yii\composer\Installer::EXTRA_BOOTSTRAP;
+    const EXTENSION_FILE = \yii\composer\Installer::EXTENSION_FILE;
     /**
      * Package types to installer class map
      *
@@ -95,6 +94,7 @@ class Installer extends LibraryInstaller
     //NEW
     protected function addPackage(PackageInterface $package)
     {
+
         $extension = [
             'name' => $package->getName(),
             'version' => $package->getVersion(),
