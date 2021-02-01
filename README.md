@@ -1,5 +1,5 @@
 # Composer installer
-> this plugin is made from "**composer/installers**"
+> this plugin is marge "**composer/installers**" "**yiisoft/yii2-composer**"
 
 
 #### Current Supported Package Types
