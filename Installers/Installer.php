@@ -67,7 +67,7 @@ class Installer extends LibraryInstaller
 
         return $installer->getInstallPath($package, $frameworkType);
     }
-    //NEW
+
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         $afterInstall = function () use ($package) {
@@ -90,14 +90,14 @@ class Installer extends LibraryInstaller
         // If not, execute the code right away as parent::install executed synchronously (composer v1, or v2 without async)
         $afterInstall();
     }
-
-    //NEW
+    
     protected function addPackage(PackageInterface $package)
     {
 
         $extension = [
             'name' => $package->getName(),
             'version' => $package->getVersion(),
+            'type' => $package->getType(),
         ];
 
         $alias = $this->generateDefaultAlias($package);
@@ -190,10 +190,6 @@ class Installer extends LibraryInstaller
         $afterUpdate = function () use ($initial, $target) {
             $this->removePackage($initial);
             $this->addPackage($target);
-            // ensure the yii2-dev package also provides Yii.php in the same place as yii2 does
-            //if ($initial->getName() == 'yiisoft/yii2-dev') {
-            //    $this->linkBaseYiiFiles();
-            //}
         };
 
         // update the package the normal composer way
@@ -213,10 +209,6 @@ class Installer extends LibraryInstaller
         $afterUninstall = function () use ($package) {
             // remove the package from yiisoft/extensions.php
             $this->removePackage($package);
-            // remove links for Yii.php
-           // if ($package->getName() == 'yiisoft/yii2-dev') {
-           //     $this->removeBaseYiiFiles();
-           // }
         };
 
 
