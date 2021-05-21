@@ -419,9 +419,14 @@ class Installer extends LibraryInstaller
     
     
     
-    public static function settingsDb()
+    public static function settingsDb($event)
     {
-
+        $params = $event->getComposer()->getPackage()->getExtra();
+        if(isset($params[__CLASS__.'::postCreateProject']['settingsDb'])){
+            $configPaths = $params[__CLASS__.'::postCreateProject']['settingsDb'];
+        }else{
+            $configPaths = func_get_args();
+        }
         echo "Settings database configure?: say \e[36m\"yes\"\e[0m for continue.\n";
 
 
@@ -522,8 +527,6 @@ class Installer extends LibraryInstaller
             //echo "Set tables prefix: {$dbPrefix}!\n";
         }
 
-
-        $configPaths = func_get_args();
         foreach ($configPaths as $file) {
             $content = file_get_contents($file);
             $content = preg_replace("/\'dsn\'\s*\=\>\s*\'.*\'/", "'dsn'=>'{$dsn}'", $content);
