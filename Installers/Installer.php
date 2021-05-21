@@ -523,7 +523,7 @@ class Installer extends LibraryInstaller
         }
 
 
-        
+        $configPaths = func_get_args();
         foreach ($configPaths as $file) {
             $content = file_get_contents($file);
             $content = preg_replace("/\'dsn\'\s*\=\>\s*\'.*\'/", "'dsn'=>'{$dsn}'", $content);
