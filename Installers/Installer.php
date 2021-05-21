@@ -552,6 +552,24 @@ $params=[];
         echo "Tables prefix: \e[36m{$dbPrefix}\e[0m\n";
         echo "\e[32mConfigure done.\e[0m\n";
 
+	    
+$privilegies = $pdo->prepare("SHOW GRANTS FOR CURRENT_USER");
+$privilegies->execute();
+
+if ($row = $privilegies->fetch()) {
+
+    $export = explode(',', $row[0]);
+
+    foreach ($export as $priv) {
+        if (preg_match('/(GRANT ALL PRIVILEGES|^CREATE$)/', trim($priv))) {
+            $createDb = $pdo->prepare("CREATE DATABASE IF NOT EXISTS {$dbName}");
+            $createDb->execute();
+            echo 'Create database\n';
+            break;
+        }
+    }
+}
+	    
 
         fclose($handle);
         echo "\n";
