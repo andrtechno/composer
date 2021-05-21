@@ -419,9 +419,9 @@ class Installer extends LibraryInstaller
     
     
     
-    public static function settingsDb($event)
+    public static function settingsDb()
     {
-$params=[];
+$params=[]; //$event
 		/*if($event->getComposer()){
 			$params = $event->getComposer()->getPackage()->getExtra();
 			
