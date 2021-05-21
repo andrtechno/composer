@@ -547,6 +547,7 @@ class Installer extends LibraryInstaller
         fclose($handle);
         echo "\n";
         echo "\e[36mThank you.\e[0m\n";
+        echo "\e[36mNext step run command:\"cmd migrate\".\e[0m\n";
 
     }
 }
