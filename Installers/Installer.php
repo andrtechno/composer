@@ -419,7 +419,7 @@ class Installer extends LibraryInstaller
     
     
     
-    public static function settingsDb(array $configPaths)
+    public static function settingsDb()
     {
 
         echo "Settings database configure?: say \e[36m\"yes\"\e[0m for continue.\n";
