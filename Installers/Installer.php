@@ -408,21 +408,6 @@ class Installer extends LibraryInstaller
                 try {
                     mkdir($path, $permission);
                     echo "done.\n";
-                    
-                    
-echo "Are you sure you want to do this?  Type 'yes' to continue: ";
-$handle = fopen ("php://stdin","r");
-$line = fgets($handle);
-if(trim($line) != 'yes'){
-    echo "ABORTING!\n";
-    //exit;
-}
-fclose($handle);
-echo "\n"; 
-echo "Thank you, continuing...\n";
-                    
-                    
-                    
                 } catch (\Exception $e) {
                     echo $e->getMessage() . "\n";
                 }
@@ -430,5 +415,138 @@ echo "Thank you, continuing...\n";
                 echo "dir already exist.\n";
             }
         }
+    }
+    
+    
+    
+    public static function settingsDb()
+    {
+
+        echo "Settings database configure?: say \e[36m\"yes\"\e[0m for continue.\n";
+
+
+        $handle = fopen("php://stdin", "r");
+        $dbComfirm = trim(fgets($handle));
+        if ($dbComfirm != 'yes') {
+            echo "\e[31mSettings database canceled!\e[0m\n";
+            exit;
+        }
+
+        echo "Database driver: (default \"mysql\"): Press \e[36m\"enter\"\e[0m for default setting.\n";
+        $dbDriver = trim(fgets($handle));
+        if ($dbDriver == '' || empty($dbDriver)) {
+            $dbDriver = 'mysql';
+            //echo "Set port {$dbDriver}!\n";
+        }
+        if (!in_array($dbDriver, array('mysql', 'sqlite', 'pgsql', 'mssql', 'oci'))) {
+            echo "\e[31mDatabase driver: \"{$dbDriver}\" Error!\e[0m\n";
+            exit;
+        }
+
+
+        echo "Database host: (default \"localhost\"): Press \e[36m\"enter\"\e[0m for default setting.\n";
+        $dbHost = trim(fgets($handle));
+        if ($dbHost == '' || empty($dbHost)) {
+            $dbHost = 'localhost';
+            //echo "Set host {$dbHost}!\n";
+        }
+
+        if (!in_array($dbDriver, array('oci', 'sqlite'))) {
+            echo "Database post: (default \"3306\"): Press \e[36m\"enter\"\e[0m for default setting.\n";
+            $dbPort = trim(fgets($handle));
+            if ($dbPort == '' || empty($dbPort)) {
+                $dbPort = '3306';
+                //echo "Set port {$dbPort}!\n";
+            }
+        }
+
+        echo "Database name:\n";
+        $dbName = trim(fgets($handle));
+        while ($dbName == '' || empty($dbName)) {
+            $dbName = trim(fgets($handle));
+            if ($dbName == '' || empty($dbName)) {
+                echo "\e[31mDatabase name cannot be empty!\e[0m\n";
+            }
+
+        }
+
+        echo "Database user:\n";
+        $dbUser = trim(fgets($handle));
+        while ($dbUser == '' || empty($dbUser)) {
+            $dbUser = trim(fgets($handle));
+            if ($dbUser == '' || empty($dbUser)) {
+                echo "\e[31mDatabase user cannot be empty!\e[0m\n";
+            }
+        }
+        if (!in_array($dbDriver, array('oci', 'sqlite'))) {
+            echo "Database password:\n";
+            $dbPwd = trim(fgets($handle));
+        }
+
+
+        if (in_array($dbDriver, array('mysql', 'pgsql'))) {
+            $dsn = strtr('{driver}:host={host};port={port};dbname={dbname}', array(
+                '{host}' => $dbHost,
+                '{dbname}' => $dbName,
+                '{driver}' => $dbDriver,
+                '{port}' => $dbPort
+            ));
+        } elseif (in_array($dbDriver, array('oci', 'sqlite'))) {
+            $dsn = strtr('{driver}:dbname={host}/{db_name}', array(
+                '{host}' => $dbHost,
+                '{dbname}' => $dbName,
+                '{driver}' => $dbDriver,
+            ));
+        }
+        $connStatus = false;
+        try {
+            $conn = new \PDO($dsn, $dbUser, $dbPwd);
+            $conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            $connStatus = $conn;
+        } catch (\Exception $e) {
+            $connStatus = false;
+        }
+
+        if (!$connStatus) {
+            echo "\e[31mFailed to connect to database \"$dbName\"!\e[0m\n";
+            exit;
+        } else {
+            echo "\e[32mСonnect to database \"$dbName\" successfully!\e[0m\n";
+        }
+
+
+        echo "Database tables prefix: (default \"Generate RAND(4)\"): Press \e[32m\"enter\"\e[0m for default setting.\n";
+        $dbPrefix = trim(fgets($handle));
+        if ($dbPrefix == '' || empty($dbPrefix)) {
+            $dbPrefix = \panix\engine\CMS::gen(4);
+            //echo "Set tables prefix: {$dbPrefix}!\n";
+        }
+
+
+
+        $configFiles[] = 'config/db.php';
+        $configFiles[] = 'config/db_local.php';
+        
+        foreach ($configFiles as $file) {
+            $content = file_get_contents($file);
+            $content = preg_replace("/\'dsn\'\s*\=\>\s*\'.*\'/", "'dsn'=>'{$dsn}'", $content);
+            $content = preg_replace("/\'username\'\s*\=\>\s*\'.*\'/", "'username'=>'{$dbUser}'", $content);
+            $content = preg_replace("/\'password\'\s*\=\>\s*\'.*\'/", "'password'=>'{$dbPwd}'", $content);
+            $content = preg_replace("/\'tablePrefix\'\s*\=\>\s*\'.*\'/", "'tablePrefix'=>'{$dbPrefix}_'", $content);
+            file_put_contents($file, $content);
+        }
+        echo "Database config:\n";
+        echo "Connection driver: \e[36m{$dbDriver} / {$dbHost}:{$dbPort}\e[0m\n";
+        echo "DB Name: \e[36m{$dbName}\e[0m\n";
+        echo "DB User: \e[36m{$dbUser}\e[0m\n";
+        echo "DB Password: \e[36m{$dbPwd}\e[0m\n";
+        echo "Tables prefix: \e[36m{$dbPrefix}\e[0m\n";
+        echo "\e[32mConfigure done.\e[0m\n";
+
+
+        fclose($handle);
+        echo "\n";
+        echo "\e[36mThank you.\e[0m\n";
+
     }
 }
