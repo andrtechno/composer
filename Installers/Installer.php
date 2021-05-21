@@ -511,8 +511,10 @@ $params=[];
             ));
         }
         $connStatus = false;
+	    $pdo = null;
         try {
-            $conn = new \PDO($dsn, $dbUser, $dbPwd);
+            $pdo = new \PDO($dsn, $dbUser, $dbPwd);
+		$conn = $pdo;
             $conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             $connStatus = $conn;
         } catch (\Exception $e) {
