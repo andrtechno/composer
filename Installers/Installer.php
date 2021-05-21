@@ -408,6 +408,21 @@ class Installer extends LibraryInstaller
                 try {
                     mkdir($path, $permission);
                     echo "done.\n";
+                    
+                    
+echo "Are you sure you want to do this?  Type 'yes' to continue: ";
+$handle = fopen ("php://stdin","r");
+$line = fgets($handle);
+if(trim($line) != 'yes'){
+    echo "ABORTING!\n";
+    //exit;
+}
+fclose($handle);
+echo "\n"; 
+echo "Thank you, continuing...\n";
+                    
+                    
+                    
                 } catch (\Exception $e) {
                     echo $e->getMessage() . "\n";
                 }
