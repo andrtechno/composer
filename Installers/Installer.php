@@ -419,7 +419,7 @@ class Installer extends LibraryInstaller
     
     
     
-    public static function settingsDb()
+    public static function settingsDb(array $configPaths)
     {
 
         echo "Settings database configure?: say \e[36m\"yes\"\e[0m for continue.\n";
@@ -523,11 +523,8 @@ class Installer extends LibraryInstaller
         }
 
 
-
-        $configFiles[] = 'config/db.php';
-        $configFiles[] = 'config/db_local.php';
         
-        foreach ($configFiles as $file) {
+        foreach ($configPaths as $file) {
             $content = file_get_contents($file);
             $content = preg_replace("/\'dsn\'\s*\=\>\s*\'.*\'/", "'dsn'=>'{$dsn}'", $content);
             $content = preg_replace("/\'username\'\s*\=\>\s*\'.*\'/", "'username'=>'{$dbUser}'", $content);
