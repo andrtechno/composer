@@ -511,12 +511,11 @@ $params=[]; //$event
             ));
         }
         $connStatus = false;
-	    $pdo = null;
+	$pdo = null;
         try {
             $pdo = new \PDO($dsn, $dbUser, $dbPwd);
-		$conn = $pdo;
-            $conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-            $connStatus = $conn;
+            $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            $connStatus = $pdo;
         } catch (\Exception $e) {
             $connStatus = false;
         }
@@ -526,8 +525,8 @@ $params=[]; //$event
             exit;
         } else {
             echo "\e[32mСonnect to database \"$dbName\" successfully!\e[0m\n";
-            $createDb = $conn->prepare("CREATE DATABASE IF NOT EXISTS {$dbName}");
-			$createDb->execute();
+           // $createDb = $conn->prepare("CREATE DATABASE IF NOT EXISTS {$dbName}");
+	    //$createDb->execute();
         }
 
 
@@ -535,7 +534,6 @@ $params=[]; //$event
         $dbPrefix = trim(fgets($handle));
         if ($dbPrefix == '' || empty($dbPrefix)) {
             $dbPrefix = \panix\engine\CMS::gen(4);
-            //echo "Set tables prefix: {$dbPrefix}!\n";
         }
 
         foreach ($configPaths as $file) {
@@ -555,7 +553,7 @@ $params=[]; //$event
         echo "\e[32mConfigure done.\e[0m\n";
 
 	    
-$privilegies = $pdo->prepare("SHOW GRANTS FOR CURRENT_USER");
+/*$privilegies = $pdo->prepare("SHOW GRANTS FOR CURRENT_USER");
 $privilegies->execute();
 
 if ($row = $privilegies->fetch()) {
@@ -570,7 +568,7 @@ if ($row = $privilegies->fetch()) {
             break;
         }
     }
-}
+}*/
 	    
 
         fclose($handle);
