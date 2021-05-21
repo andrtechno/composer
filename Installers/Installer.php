@@ -421,12 +421,19 @@ class Installer extends LibraryInstaller
     
     public static function settingsDb($event)
     {
-        $params = $event->getComposer()->getPackage()->getExtra();
-        if(isset($params[__CLASS__.'::postCreateProject']['settingsDb'])){
-            $configPaths = $params[__CLASS__.'::postCreateProject']['settingsDb'];
-        }else{
-            $configPaths = func_get_args();
+$params=[];
+		if($event->getComposer()){
+			$params = $event->getComposer()->getPackage()->getExtra();
+			
+			if(isset($params[__CLASS__.'::postCreateProject']['settingsDb'])){
+				$configPaths = $params[__CLASS__.'::postCreateProject']['settingsDb'];
+			}
+		}else{
+            		$configPaths = func_get_args();
         }
+        
+
+        
         echo "Settings database configure?: say \e[36m\"yes\"\e[0m for continue.\n";
 
 
@@ -517,6 +524,8 @@ class Installer extends LibraryInstaller
             exit;
         } else {
             echo "\e[32mСonnect to database \"$dbName\" successfully!\e[0m\n";
+            $createDb = $conn->prepare("CREATE DATABASE IF NOT EXISTS {$dbName}");
+			$createDb->execute();
         }
 
 
