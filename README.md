@@ -18,7 +18,7 @@
 
 
 composer.json
-`
+```
     "extra": {
         "panix\\composer\\Installer\\Installer::postCreateProject": {
             "createDir": [
@@ -28,4 +28,4 @@ composer.json
             ]
         }
     },
-`
+```
