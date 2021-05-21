@@ -15,3 +15,17 @@
 | `pixelion-widget-custom`
 | `pixelion-component-custom`
 
+
+
+composer.json
+`
+    "extra": {
+        "panix\\composer\\Installer\\Installer::postCreateProject": {
+            "createDir": [
+                {
+                    "web/uploads/content": "0755"
+                }
+            ]
+        }
+    },
+`
