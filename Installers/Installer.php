@@ -422,15 +422,15 @@ class Installer extends LibraryInstaller
     public static function settingsDb($event)
     {
 $params=[];
-		if($event->getComposer()){
+		/*if($event->getComposer()){
 			$params = $event->getComposer()->getPackage()->getExtra();
 			
 			if(isset($params[__CLASS__.'::postCreateProject']['settingsDb'])){
 				$configPaths = $params[__CLASS__.'::postCreateProject']['settingsDb'];
 			}
-		}else{
+		}else{*/
             		$configPaths = func_get_args();
-        }
+       // }
         
 
         
