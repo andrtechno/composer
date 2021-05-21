@@ -368,4 +368,52 @@ class Installer extends LibraryInstaller
             }
         }
     }
+    
+    
+        /**
+     * Special method to run tasks defined in `[extra][panix\composer\Installer::postCreateProject]` key in `composer.json`
+     *
+     * @param Event $event
+     */
+    public static function postCreateProject($event)
+    {
+        static::runCommands($event, __METHOD__);
+    }
+
+    /**
+     * Special method to run tasks defined in `[extra][$extraKey]` key in `composer.json`
+     *
+     * @param Event $event
+     * @param string $extraKey
+     */
+    protected static function runCommands($event, $extraKey)
+    {
+        $params = $event->getComposer()->getPackage()->getExtra();
+        if (isset($params[$extraKey]) && is_array($params[$extraKey])) {
+            foreach ($params[$extraKey] as $method => $args) {
+                call_user_func_array([__CLASS__, $method], (array)$args);
+            }
+        }
+    }
+
+    /**
+     * Create directory and permissions for those listed in the additional section.
+     * @param array $paths the paths (keys) and the corresponding permission octal strings (values)
+     */
+    public static function createDir(array $paths)
+    {
+        foreach ($paths as $path => $permission) {
+            if (!file_exists($path)) {
+                echo "mkdir('$path', $permission)...";
+                try {
+                    mkdir($path, $permission);
+                    echo "done.\n";
+                } catch (\Exception $e) {
+                    echo $e->getMessage() . "\n";
+                }
+            } else {
+                echo "dir already exist.\n";
+            }
+        }
+    }
 }
