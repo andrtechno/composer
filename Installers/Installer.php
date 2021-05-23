@@ -200,6 +200,7 @@ class Installer extends LibraryInstaller
 
     protected function saveExtensions(array $extensions)
     {
+        $this->io->write('  - <info>saveExtensions</info>');
         $file = $this->vendorDir . '/' . static::EXTENSION_FILE;
         if (!file_exists(dirname($file))) {
             mkdir(dirname($file), 0777, true);
@@ -233,30 +234,34 @@ class Installer extends LibraryInstaller
 
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-
+        $io = $this->io;
         $afterUninstall = function () use ($package) {
             // remove the package from yiisoft/extensions.php
             $this->removePackage($package);
+
         };
 
-
         $installPath = $this->getPackageBasePath($package);
-        $io = $this->io;
+
         $outputStatus = function () use ($io, $installPath) {
-            $io->write(sprintf('Deleting %s - %s', $installPath, !file_exists($installPath) ? '<comment>deleted</comment>' : '<error>not deleted</error>'));
+            $io->write(sprintf('  - Deleting <info>%s</info> (%s)', $installPath, !file_exists($installPath) ? '<comment>deleted</comment>' : '<error>not deleted</error>'));
         };
 
         $promise = parent::uninstall($repo, $package);
 
         // Composer v2 might return a promise here
-        if ($promise instanceof PromiseInterface) {
-            return $promise->then($outputStatus);
-        }
-
-        // If not, execute the code right away as parent::uninstall executed synchronously (composer v1, or v2 without async)
+        //if ($promise instanceof PromiseInterface) {
+       //     return $promise->then($outputStatus);
+       // }
         $outputStatus();
+        // Composer v2 might return a promise here
+        if ($promise instanceof PromiseInterface) {
+            return $promise->then($afterUninstall);
+        }
+        // If not, execute the code right away as parent::uninstall executed synchronously (composer v1, or v2 without async)
+
         $afterUninstall();
-        return null;
+      //  return null;
     }
 
     /**
