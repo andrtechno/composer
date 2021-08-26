@@ -71,7 +71,7 @@ class Installer extends LibraryInstaller
 
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        $afterInstall = function () use ($package) {
+        $afterInstall = function () use ($package, $repo) {
             // add the package to yiisoft/extensions.php
             $this->addPackage($package);
             // ensure the yii2-dev package also provides Yii.php in the same place as yii2 does
@@ -110,6 +110,22 @@ class Installer extends LibraryInstaller
         if (isset($extra[self::EXTRA_BOOTSTRAP])) {
             $extension['bootstrap'] = $extra[self::EXTRA_BOOTSTRAP];
         }
+        if (isset($extra['blocks'])) {
+            if (is_array($extra['blocks'])) {
+                foreach ($extra['blocks'] as $block) {
+                    $extension['blocks'][] = $block;
+                }
+            }
+
+        }
+
+        if (isset($extra['widgets'])) {
+            if (is_array($extra['widgets'])) {
+                foreach ($extra['widgets'] as $widget) {
+                    $extension['widgets'][] = $widget;
+                }
+            }
+        }
 
         $extensions = $this->loadExtensions();
         $extensions[$package->getName()] = $extension;
@@ -121,6 +137,13 @@ class Installer extends LibraryInstaller
         $packages = $this->loadExtensions();
         unset($packages[$package->getName()]);
         $this->saveExtensions($packages);
+    }
+
+    protected function copyFiles(PackageInterface $package)
+    {
+
+        //  $package
+
     }
 
     protected function loadExtensions()
@@ -200,7 +223,6 @@ class Installer extends LibraryInstaller
 
     protected function saveExtensions(array $extensions)
     {
-        $this->io->write('  - <info>saveExtensions</info>');
         $file = $this->vendorDir . '/' . static::EXTENSION_FILE;
         if (!file_exists(dirname($file))) {
             mkdir(dirname($file), 0777, true);
@@ -234,34 +256,30 @@ class Installer extends LibraryInstaller
 
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        $io = $this->io;
+
         $afterUninstall = function () use ($package) {
             // remove the package from yiisoft/extensions.php
             $this->removePackage($package);
-
         };
 
-        $installPath = $this->getPackageBasePath($package);
 
+        $installPath = $this->getPackageBasePath($package);
+        $io = $this->io;
         $outputStatus = function () use ($io, $installPath) {
-            $io->write(sprintf('  - Deleting <info>%s</info> (%s)', $installPath, !file_exists($installPath) ? '<comment>deleted</comment>' : '<error>not deleted</error>'));
+            $io->write(sprintf('Deleting %s - %s', $installPath, !file_exists($installPath) ? '<comment>deleted</comment>' : '<error>not deleted</error>'));
         };
 
         $promise = parent::uninstall($repo, $package);
 
         // Composer v2 might return a promise here
-        //if ($promise instanceof PromiseInterface) {
-       //     return $promise->then($outputStatus);
-       // }
-        $outputStatus();
-        // Composer v2 might return a promise here
         if ($promise instanceof PromiseInterface) {
-            return $promise->then($afterUninstall);
+            return $promise->then($outputStatus);
         }
-        // If not, execute the code right away as parent::uninstall executed synchronously (composer v1, or v2 without async)
 
+        // If not, execute the code right away as parent::uninstall executed synchronously (composer v1, or v2 without async)
+        $outputStatus();
         $afterUninstall();
-      //  return null;
+        return null;
     }
 
     /**
@@ -373,9 +391,9 @@ class Installer extends LibraryInstaller
             }
         }
     }
-    
-    
-        /**
+
+
+    /**
      * Special method to run tasks defined in `[extra][panix\composer\Installer::postCreateProject]` key in `composer.json`
      *
      * @param Event $event
@@ -405,8 +423,9 @@ class Installer extends LibraryInstaller
      * Create directory and permissions for those listed in the additional section.
      * @param array $paths the paths (keys) and the corresponding permission octal strings (values)
      */
-    public static function createDir(array $paths)
+    public function createDir(array $paths)
     {
+
         foreach ($paths as $path => $permission) {
             if (!file_exists($path)) {
                 echo "mkdir('$path', $permission)...";
@@ -420,166 +439,5 @@ class Installer extends LibraryInstaller
                 echo "dir already exist.\n";
             }
         }
-    }
-    
-    
-    
-    public static function settingsDb()
-    {
-$params=[]; //$event
-		/*if($event->getComposer()){
-			$params = $event->getComposer()->getPackage()->getExtra();
-			
-			if(isset($params[__CLASS__.'::postCreateProject']['settingsDb'])){
-				$configPaths = $params[__CLASS__.'::postCreateProject']['settingsDb'];
-			}
-		}else{*/
-            		$configPaths = func_get_args();
-       // }
-        
-
-        
-        echo "Settings database configure?: say \e[36m\"yes\"\e[0m for continue.\n";
-
-
-        $handle = fopen("php://stdin", "r");
-        $dbComfirm = trim(fgets($handle));
-        if ($dbComfirm != 'yes') {
-            echo "\e[31mSettings database canceled!\e[0m\n";
-            exit;
-        }
-
-        echo "Database driver: (default \"mysql\"): Press \e[36m\"enter\"\e[0m for default setting.\n";
-        $dbDriver = trim(fgets($handle));
-        if ($dbDriver == '' || empty($dbDriver)) {
-            $dbDriver = 'mysql';
-            //echo "Set port {$dbDriver}!\n";
-        }
-        if (!in_array($dbDriver, array('mysql', 'sqlite', 'pgsql', 'mssql', 'oci'))) {
-            echo "\e[31mDatabase driver: \"{$dbDriver}\" Error!\e[0m\n";
-            exit;
-        }
-
-
-        echo "Database host: (default \"localhost\"): Press \e[36m\"enter\"\e[0m for default setting.\n";
-        $dbHost = trim(fgets($handle));
-        if ($dbHost == '' || empty($dbHost)) {
-            $dbHost = 'localhost';
-            //echo "Set host {$dbHost}!\n";
-        }
-
-        if (!in_array($dbDriver, array('oci', 'sqlite'))) {
-            echo "Database post: (default \"3306\"): Press \e[36m\"enter\"\e[0m for default setting.\n";
-            $dbPort = trim(fgets($handle));
-            if ($dbPort == '' || empty($dbPort)) {
-                $dbPort = '3306';
-                //echo "Set port {$dbPort}!\n";
-            }
-        }
-
-        echo "Database name:\n";
-        $dbName = trim(fgets($handle));
-        while ($dbName == '' || empty($dbName)) {
-            $dbName = trim(fgets($handle));
-            if ($dbName == '' || empty($dbName)) {
-                echo "\e[31mDatabase name cannot be empty!\e[0m\n";
-            }
-
-        }
-
-        echo "Database user:\n";
-        $dbUser = trim(fgets($handle));
-        while ($dbUser == '' || empty($dbUser)) {
-            $dbUser = trim(fgets($handle));
-            if ($dbUser == '' || empty($dbUser)) {
-                echo "\e[31mDatabase user cannot be empty!\e[0m\n";
-            }
-        }
-        if (!in_array($dbDriver, array('oci', 'sqlite'))) {
-            echo "Database password:\n";
-            $dbPwd = trim(fgets($handle));
-        }
-
-
-        if (in_array($dbDriver, array('mysql', 'pgsql'))) {
-            $dsn = strtr('{driver}:host={host};port={port};dbname={dbname}', array(
-                '{host}' => $dbHost,
-                '{dbname}' => $dbName,
-                '{driver}' => $dbDriver,
-                '{port}' => $dbPort
-            ));
-        } elseif (in_array($dbDriver, array('oci', 'sqlite'))) {
-            $dsn = strtr('{driver}:dbname={host}/{db_name}', array(
-                '{host}' => $dbHost,
-                '{dbname}' => $dbName,
-                '{driver}' => $dbDriver,
-            ));
-        }
-        $connStatus = false;
-	$pdo = null;
-        try {
-            $pdo = new \PDO($dsn, $dbUser, $dbPwd);
-            $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-            $connStatus = $pdo;
-        } catch (\Exception $e) {
-            $connStatus = false;
-        }
-
-        if (!$connStatus) {
-            echo "\e[31mFailed to connect to database \"$dbName\"!\e[0m\n";
-            exit;
-        } else {
-            echo "\e[32mСonnect to database \"$dbName\" successfully!\e[0m\n";
-           // $createDb = $conn->prepare("CREATE DATABASE IF NOT EXISTS {$dbName}");
-	    //$createDb->execute();
-        }
-
-
-        echo "Database tables prefix: (default \"Generate RAND(4)\"): Press \e[32m\"enter\"\e[0m for default setting.\n";
-        $dbPrefix = trim(fgets($handle));
-        if ($dbPrefix == '' || empty($dbPrefix)) {
-            $dbPrefix = \panix\engine\CMS::gen(4);
-        }
-
-        foreach ($configPaths as $file) {
-            $content = file_get_contents($file);
-            $content = preg_replace("/\'dsn\'\s*\=\>\s*\'.*\'/", "'dsn'=>'{$dsn}'", $content);
-            $content = preg_replace("/\'username\'\s*\=\>\s*\'.*\'/", "'username'=>'{$dbUser}'", $content);
-            $content = preg_replace("/\'password\'\s*\=\>\s*\'.*\'/", "'password'=>'{$dbPwd}'", $content);
-            $content = preg_replace("/\'tablePrefix\'\s*\=\>\s*\'.*\'/", "'tablePrefix'=>'{$dbPrefix}_'", $content);
-            file_put_contents($file, $content);
-        }
-        echo "Database config:\n";
-        echo "Connection driver: \e[36m{$dbDriver} / {$dbHost}:{$dbPort}\e[0m\n";
-        echo "DB Name: \e[36m{$dbName}\e[0m\n";
-        echo "DB User: \e[36m{$dbUser}\e[0m\n";
-        echo "DB Password: \e[36m{$dbPwd}\e[0m\n";
-        echo "Tables prefix: \e[36m{$dbPrefix}\e[0m\n";
-        echo "\e[32mConfigure done.\e[0m\n";
-
-	    
-/*$privilegies = $pdo->prepare("SHOW GRANTS FOR CURRENT_USER");
-$privilegies->execute();
-
-if ($row = $privilegies->fetch()) {
-
-    $export = explode(',', $row[0]);
-
-    foreach ($export as $priv) {
-        if (preg_match('/(GRANT ALL PRIVILEGES|^CREATE$)/', trim($priv))) {
-            $createDb = $pdo->prepare("CREATE DATABASE IF NOT EXISTS {$dbName}");
-            $createDb->execute();
-            echo 'Create database\n';
-            break;
-        }
-    }
-}*/
-	    
-
-        fclose($handle);
-        echo "\n";
-        echo "\e[36mThank you.\e[0m\n";
-        echo "Next step run command:\e[36m\"cmd migrate\"\e[0m.\n";
-
     }
 }
