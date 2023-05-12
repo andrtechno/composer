@@ -533,7 +533,7 @@ $params=[]; //$event
         echo "Database tables prefix: (default \"Generate RAND(4)\"): Press \e[32m\"enter\"\e[0m for default setting.\n";
         $dbPrefix = trim(fgets($handle));
         if ($dbPrefix == '' || empty($dbPrefix)) {
-            $dbPrefix = \panix\engine\CMS::gen(4);
+            $dbPrefix = mb_strtolower(\panix\engine\CMS::gen(4));
         }
 
         foreach ($configPaths as $file) {
